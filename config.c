@@ -155,6 +155,10 @@ void read_config(char *filename)
     for (i = 0; i < count; i++) {
       atoms[natoms + i].neigh = (neigh_t *)malloc(sizeof(neigh_t));
       reg_for_free(atoms[natoms + i].neigh, "test neigh");
+#ifdef NEWCOUL
+      atoms[natoms + i].coulneigh = (neigh_t *)malloc(sizeof(neigh_t));
+      reg_for_free(atoms[natoms + i].coulneigh, "coulomb neigh");
+#endif
     }
     coheng = (double *)realloc(coheng, (nconf + 1) * sizeof(double));
     if (NULL == coheng)
@@ -559,6 +563,9 @@ void read_config(char *filename)
     /* compute the neighbor table */
     for (i = natoms; i < natoms + count; i++) {
       atoms[i].num_neigh = 0;
+#ifdef NEWCOUL   /* counter for coulomb neighbors only */
+      atoms[i].num_couln = 0;
+#endif
       /* loop over all atoms for threebody interactions */
 #ifdef THREEBODY
       for (j = natoms; j < natoms + count; j++) {
@@ -579,6 +586,26 @@ void read_config(char *filename)
 	      r = sqrt(SPROD(dd, dd));
 	      type1 = atoms[i].type;
 	      type2 = atoms[j].type;
+#ifdef NEWCOUL      /* neighbors table for coulomb interaction only */
+             if (r <= dp_cut ) {
+               atoms[i].coulneigh =
+                (neigh_t *)realloc(atoms[i].coulneigh, (atoms[i].num_couln + 1) * sizeof(neigh_t));
+               k = atoms[i].num_couln++;
+               init_neigh(atoms[i].coulneigh + k);
+               atoms[i].coulneigh[k].type = type2;
+               atoms[i].coulneigh[k].nr = j;
+               atoms[i].coulneigh[k].r = r;
+               atoms[i].coulneigh[k].r2 = r * r;
+               atoms[i].coulneigh[k].inv_r = 1.0 / r;
+               atoms[i].coulneigh[k].dist_r = dd;
+               atoms[i].coulneigh[k].dist.x = dd.x ;
+               atoms[i].coulneigh[k].dist.y = dd.y ;
+               atoms[i].coulneigh[k].dist.z = dd.z ;
+               col = (type1 <= type2) ? type1 * ntypes + type2 - ((type1 * (type1 + 1)) / 2)
+                 : type2 * ntypes + type1 - ((type2 * (type2 + 1)) / 2);
+               atoms[i].coulneigh[k].col[0] = col;
+              }
+#endif
 	      if (r <= rcut[type1 * ntypes + type2]) {
 		if (r <= rmin[type1 * ntypes + type2]) {
 		  sh_dist = nconf;
@@ -925,6 +952,9 @@ void read_config(char *filename)
       }				/* second loop over atoms (neighbors) */
 
       reg_for_free(atoms[i].neigh, "neighbor table atom %d", i);
+#ifdef NEWCOUL 
+      reg_for_free(atoms[i].coulneigh, "coulomb neighbor table atom %d", i);
+#endif
     }				/* first loop over atoms */
 
     /* compute the angular part */
