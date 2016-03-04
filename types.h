@@ -211,6 +211,11 @@ typedef struct {
 #endif
 #endif
 
+#ifdef NEWCOUL
+  neigh_t *coulneigh;          /* array for coulomb neighbors */
+  int   num_couln;             /* number of coulomb neighbors */
+#endif
+
   neigh_t *neigh;		/* dynamic array for neighbors */
 #ifdef THREEBODY
   angle_t *angle_part;		/* dynamic array for angular neighbors */

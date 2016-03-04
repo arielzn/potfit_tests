@@ -266,8 +266,7 @@ double calc_forces(double *xi_opt, double *forces, int flag)
 	  }
 	}			/* end F I R S T LOOP */
 
-	/* S E C O N D loop: calculate short-range and monopole forces,
-	   calculate static field- and dipole-contributions */
+	/* S E C O N D loop: calculate short-range forces */
 	for (i = 0; i < inconf[h]; i++) {	/* atoms */
 	  atom = conf_atoms + i + cnfstart[h] - firstatom;
 	  type1 = atom->type;
@@ -277,9 +276,6 @@ double calc_forces(double *xi_opt, double *forces, int flag)
 	    type2 = neigh->type;
 	    col = neigh->col[0];
 
-	    /* updating tail-functions - only necessary with variing kappa */
-	    if (!apt->sw_kappa)
-	      elstat_shift(neigh->r, dp_kappa, &neigh->fnval_el, &neigh->grad_el, &neigh->ggrad_el);
 
 	    /* In small cells, an atom might interact with itself */
 	    self = (neigh->nr == i + cnfstart[h]) ? 1 : 0;
@@ -328,6 +324,33 @@ double calc_forces(double *xi_opt, double *forces, int flag)
 #endif /* STRESS */
 	      }
 	    }
+	  }			/*j  loop over neighbours */
+	}			/*i end  S E C O N D loop over atoms */
+
+
+        /* T H I R D loop: calculate monopole forces,
+	   calculate static field- and dipole-contributions */
+        for (i = 0; i < inconf[h]; i++) {	/* atoms */
+	  atom = conf_atoms + i + cnfstart[h] - firstatom;
+	  type1 = atom->type;
+	  n_i = 3 * (cnfstart[h] + i);
+
+#ifdef NEWCOUL
+	  for (j = 0; j < atom->num_couln; j++) {	/* coulomb neighbors */
+	    neigh = atom->coulneigh + j;
+#else
+	  for (j = 0; j < atom->num_neigh; j++) {	/* neighbors */
+	    neigh = atom->neigh + j;
+#endif
+	    type2 = neigh->type;
+	    col = neigh->col[0];
+
+	    /* updating tail-functions - only necessary with variing kappa */
+	    if (!apt->sw_kappa)
+	      elstat_shift(neigh->r, dp_kappa, &neigh->fnval_el, &neigh->grad_el, &neigh->ggrad_el);
+
+	    /* In small cells, an atom might interact with itself */
+	    self = (neigh->nr == i + cnfstart[h]) ? 1 : 0;
 
 	    /* calculate monopole forces */
 	    if (neigh->r < dp_cut && (charge[type1] || charge[type2])) {
@@ -406,12 +429,11 @@ double calc_forces(double *xi_opt, double *forces, int flag)
 
 	    }
 
-	  }			/* loop over neighbours */
-	}			/* end S E C O N D loop over atoms */
+	  }			/*j  loop over neighbours */
+	}			/*i end T H I R D loop over atoms */
 
 #ifdef DIPOLE
-	/* T H I R D loop: calculate whole dipole moment for every atom */
-	double rp, dp_sum;
+	/* F O U R T H loop: calculate whole dipole moment for every atom */
 	int   dp_converged = 0, dp_it = 0;
 	double max_diff = 10;
 
@@ -450,8 +472,13 @@ double calc_forces(double *xi_opt, double *forces, int flag)
 	  for (i = 0; i < inconf[h]; i++) {	/* atoms */
 	    atom = conf_atoms + i + cnfstart[h] - firstatom;
 	    type1 = atom->type;
+#ifdef NEWCOUL
+	    for (j = 0; j < atom->num_couln; j++) {	/* coulomb neighbors */
+	      neigh = atom->coulneigh + j;
+#else
 	    for (j = 0; j < atom->num_neigh; j++) {	/* neighbors */
 	      neigh = atom->neigh + j;
+#endif
 	      type2 = neigh->type;
 	      col = neigh->col[0];
 	      /* In small cells, an atom might interact with itself */
@@ -519,15 +546,20 @@ double calc_forces(double *xi_opt, double *forces, int flag)
 	}			/* end T H I R D loop over atoms */
 
 
-	/* F O U R T H  loop: calculate monopole-dipole and dipole-dipole forces */
+	/* F I F T H  loop: calculate monopole-dipole and dipole-dipole forces */
 	double rp_i, rp_j, pp_ij, tmp_1, tmp_2;
 	double grad_1, grad_2, srval, srgrad, srval_tail, srgrad_tail, fnval_sum, grad_sum;
 	for (i = 0; i < inconf[h]; i++) {	/* atoms */
 	  atom = conf_atoms + i + cnfstart[h] - firstatom;
 	  type1 = atom->type;
 	  n_i = 3 * (cnfstart[h] + i);
+#ifdef NEWCOUL
+	  for (j = 0; j < atom->num_couln; j++) {	/* coulomb neighbors */
+	    neigh = atom->coulneigh + j;
+#else
 	  for (j = 0; j < atom->num_neigh; j++) {	/* neighbors */
 	    neigh = atom->neigh + j;
+#endif
 	    type2 = neigh->type;
 	    col = neigh->col[0];
 
@@ -689,11 +721,11 @@ double calc_forces(double *xi_opt, double *forces, int flag)
 	      }
 	    }
 	  }			/* loop over neighbours */
-	}			/* end F O U R T H loop over atoms */
+	}			/* end F I F T H loop over atoms */
 #endif /* DIPOLE */
 
 
-	/* F I F T H  loop: self energy contributions and sum-up force contributions */
+	/* S I X T H  loop: self energy contributions and sum-up force contributions */
 	double qq;
 #ifdef DIPOLE
 	double pp;
@@ -739,7 +771,7 @@ double calc_forces(double *xi_opt, double *forces, int flag)
 		conf_weight[h] * (dsquare(forces[n_i + 0]) + dsquare(forces[n_i + 1]) + dsquare(forces[n_i +
 		    2]));
 	  }
-	}			/* end F I F T H loop over atoms */
+	}			/* end S I X T H loop over atoms */
 
 
 	/* whole energy contributions flow into tmpsum */

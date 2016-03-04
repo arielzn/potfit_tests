@@ -131,8 +131,8 @@ SHELL = /bin/bash
 # i686-icc 	32bit Intel Compiler
 # i686-gcc  	32bit GNU Compiler
 #
-#SYSTEM 		= x86_64-icc 	# Use this as fallback
-SYSTEM 		= $(shell uname -m)-icc
+##SYSTEM 		= x86_64-icc 	# Use this as fallback
+SYSTEM 		= $(shell uname -m)-gcc
 
 # This is the directory where the potfit binary will be moved to.
 # If BIN_DIR is empty, the binary will not be moved.
@@ -141,7 +141,7 @@ BIN_DIR 	= bin/
 # Base directory of your installation of the MKL or ACML
 
 # General settings
-MKLDIR          = /opt/intel/composer_xe_2013.3.163/mkl
+MKLDIR          = ${MKLROOT}
 ACML4DIR  	= /opt/acml4.4.0/gfortran64
 ACML5DIR  	= /opt/acml/gfortran64
 LIBMDIR 	= /opt/acml/libm
@@ -724,6 +724,7 @@ endif
 # How to link
 ${MAKETARGET}: ${OBJECTS}
 	@echo " [LD] $@"
+	@echo -e "\nCompiled with CC=${CC} \nCFLAGS=${CFLAGS} \nLIBS=${LIBS}\n"
 ifeq (,${BIN_DIR})
 	@${CC} ${LFLAGS_${PARALLEL}} -o $@ ${OBJECTS} ${LIBS}
 else
