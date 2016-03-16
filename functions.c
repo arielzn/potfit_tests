@@ -1259,10 +1259,10 @@ void elstat_shift(double r, double dp_kappa, double *fnval_tail, double *grad_ta
  *
  ****************************************************************/
 
-void elstat_lammps_wolf(double r, double dp_kappa, double *fnval_tail, double *grad_tail)
+void elstat_lammps_wolf(double r, double dp_kappa, double *fnval_tail, double *grad_tail, double *ggrad_tail)
 {
   static double ftail, gtail, ggtail, ftail_cut, gtail_cut, ggtail_cut;
-  static double erfcc,e_shift,derfc,e_self;
+  static double erfcc,e_shift,derfcc,e_self;
   static double x[4];
 
   x[0] = r * r;
@@ -1277,6 +1277,17 @@ void elstat_lammps_wolf(double r, double dp_kappa, double *fnval_tail, double *g
 
   *fnval_tail = ftail - ftail_cut;
   *grad_tail = gtail - gtail_cut;
+  *ggrad_tail = 0.0;
+
+ //        in csh version
+
+//   erfcc = erfc(dp_kappa * r) / r;
+//   e_shift = erfc(dp_kappa * dp_cut) / dp_cut;
+// 
+//   derfcc = erfcc - x[3] * x[4] * exp(-x[0] * x[2]);
+// 
+//   *fnval_tail = dp_eps * (erfcc - e_shift);
+//   *grad_tail = derfcc;
 
 
  //  in lammps
@@ -1291,15 +1302,6 @@ void elstat_lammps_wolf(double r, double dp_kappa, double *fnval_tail, double *g
  //         if (factor_coul < 1.0) forcecoul -= (1.0-factor_coul)*prefactor;
  
  
- //        in csh version
-
- //  erfcc = erfc(dp_kappa * r) / r;
- //  e_shift = erfc(dp_kappa * dp_cut) / dp_cut;
- //
- //  derfcc = erfcc - x[3] * x[4] exp(-x[0] * x[2]);
- //
- //  *fnval_tail = dp_eps * (erfcc - e_shift);
- //  *grad_tail = gtail - gtail_cut;
 }
 
 
@@ -1317,8 +1319,7 @@ void init_tails(double dp_kappa)
   for (i = 0; i < natoms; i++)
     for (j = 0; j < atoms[i].num_couln; j++) {
       elstat_lammps_wolf(atoms[i].coulneigh[j].r, dp_kappa, &atoms[i].coulneigh[j].fnval_el,
-	&atoms[i].coulneigh[j].grad_el);
-          // printf("%d   %d   %d, r: %f  tail: %f \n", i, j, atoms[i].coulneigh[j].nr, atoms[i].coulneigh[j].r,atoms[i].coulneigh[j].fnval_el);
+	&atoms[i].coulneigh[j].grad_el, &atoms[i].coulneigh[j].ggrad_el);
     }
 #else
   for (i = 0; i < natoms; i++)

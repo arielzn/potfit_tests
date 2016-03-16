@@ -347,8 +347,11 @@ double calc_forces(double *xi_opt, double *forces, int flag)
 
 	    /* updating tail-functions - only necessary with variing kappa */
 	    if (!apt->sw_kappa)
+#ifdef NEWCOUL   /* NEWCOUL */
+	      elstat_lammps_wolf(neigh->r, dp_kappa, &neigh->fnval_el, &neigh->grad_el, &neigh->ggrad_el);
+#else
 	      elstat_shift(neigh->r, dp_kappa, &neigh->fnval_el, &neigh->grad_el, &neigh->ggrad_el);
-
+#endif	      
 	    /* In small cells, an atom might interact with itself */
 	    self = (neigh->nr == i + cnfstart[h]) ? 1 : 0;
 
@@ -426,9 +429,7 @@ double calc_forces(double *xi_opt, double *forces, int flag)
 		conf_atoms[neigh->nr - firstatom].p_sr.z -= charge[type1] * neigh->dist_r.z * p_sr_tail;
 	      }
 #endif /* DIPOLE */
-
 	    }
-
 	  }			/*j  loop over neighbours */
 	}			/*i end T H I R D loop over atoms */
 

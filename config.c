@@ -157,7 +157,7 @@ void read_config(char *filename)
       reg_for_free(atoms[natoms + i].neigh, "test neigh");
 #ifdef NEWCOUL
       atoms[natoms + i].coulneigh = (neigh_t *)malloc(sizeof(neigh_t));
-      reg_for_free(atoms[natoms + i].coulneigh, "coulomb neigh");
+      //reg_for_free(atoms[natoms + i].coulneigh, "coulomb neigh");
 #endif
     }
     coheng = (double *)realloc(coheng, (nconf + 1) * sizeof(double));
