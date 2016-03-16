@@ -536,7 +536,7 @@ ifneq (,$(strip $(findstring coulomb,${MAKETARGET})))
   ifeq (,$(strip $(findstring apot,${MAKETARGET})))
     ERROR += COULOMB does not support tabulated potentials
   endif
-  CFLAGS  += -DCOULOMB
+  CFLAGS  += -DCOULOMB  -DNEWCOUL
   INTERACTION = 1
 endif
 
