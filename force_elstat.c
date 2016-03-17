@@ -728,6 +728,10 @@ double calc_forces(double *xi_opt, double *forces, int flag)
 
 	/* S I X T H  loop: self energy contributions and sum-up force contributions */
 	double qq;
+#ifdef NEWCOUL
+	double e_shift;
+        e_shift=erfc(dp_kappa*dp_cut)/dp_cut;
+#endif
 #ifdef DIPOLE
 	double pp;
 #endif /* DIPOLE */
@@ -739,7 +743,11 @@ double calc_forces(double *xi_opt, double *forces, int flag)
 	  /* self energy contributions */
 	  if (charge[type1]) {
 	    qq = charge[type1] * charge[type1];
+#ifdef NEWCOUL
+     	    fnval = dp_eps * qq * (dp_kappa / sqrt(M_PI) + 0.5*e_shift );
+#else
 	    fnval = dp_eps * dp_kappa * qq / sqrt(M_PI);
+#endif
 	    forces[energy_p + h] -= fnval;
 	  }
 #ifdef DIPOLE

@@ -1281,14 +1281,14 @@ void elstat_lammps_wolf(double r, double dp_kappa, double *fnval_tail, double *g
 
  //        in csh version
 
-//   erfcc = erfc(dp_kappa * r) / r;
-//   e_shift = erfc(dp_kappa * dp_cut) / dp_cut;
-// 
-//   derfcc = erfcc - x[3] * x[4] * exp(-x[0] * x[2]);
-// 
-//   *fnval_tail = dp_eps * (erfcc - e_shift);
-//   *grad_tail = derfcc;
-
+ //  erfcc = erfc(dp_kappa * r) / r;
+ //  e_shift = erfc(dp_kappa * dp_cut) / dp_cut;
+ 
+ //  derfcc = erfcc - x[3] * x[4] * exp(-x[0] * x[2]);
+ //
+ //  *fnval_tail = dp_eps * (erfcc - e_shift);
+ //  *grad_tail = derfcc;
+ //  *ggrad_tail = 0.0;
 
  //  in lammps
  //  e_shift = erfc(alf*cut_coul)/cut_coul;
