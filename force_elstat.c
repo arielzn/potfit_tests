@@ -731,8 +731,7 @@ double calc_forces(double *xi_opt, double *forces, int flag)
 #ifdef NEWCOUL
 	double e_shift, ggrad;
         elstat_value(dp_cut, dp_kappa, &fnval_tail, &grad_tail, &ggrad);
-        //e_shift = fnval_tail;    // wolf
-	e_shift = fnval_tail + grad_tail*dp_cut;
+        e_shift = fnval_tail - grad_tail*dp_cut;
 #endif
 #ifdef DIPOLE
 	double pp;
@@ -746,7 +745,7 @@ double calc_forces(double *xi_opt, double *forces, int flag)
 	  if (charge[type1]) {
 	    qq = charge[type1] * charge[type1];
 #ifdef NEWCOUL
-     	    fnval = qq * ( dp_eps * dp_kappa / sqrt(M_PI) + 0.5*e_shift );
+     	    fnval = qq * ( dp_eps * dp_kappa / sqrt(M_PI) + e_shift*0.5 );
 #else
 	    fnval = dp_eps * dp_kappa * qq / sqrt(M_PI);
 #endif

@@ -1220,8 +1220,8 @@ void elstat_value(double r, double dp_kappa, double *ftail, double *gtail, doubl
   x[3] = exp(-x[0] * x[1]);
 
   *ftail = dp_eps * erfc(dp_kappa * r) / r;
-  *gtail = -(*ftail + x[2] * x[3]) / x[0];
-  *ggtail = (2 * x[1] * x[2] * x[3] - *gtail * 3) / x[0];
+  *gtail = -(*ftail + x[2] * x[3]) / r;
+  *ggtail = -2.0 * x[1] * x[2] * x[3] * r + (x[2] * x[3] - *ftail) / x[0] - *gtail / r ;
 }
 
 /****************************************************************
@@ -1252,25 +1252,6 @@ void elstat_shift(double r, double dp_kappa, double *fnval_tail, double *grad_ta
 #endif /* DIPOLE */
 }
 
-
-/****************************************************************
- *
- * wolf sum as implemented in lammps (pair_born_coul_wolf.cpp)
- *
- ****************************************************************/
-
-void elstat_wolf(double r, double dp_kappa, double *fnval_tail, double *grad_tail, double *ggrad_tail)
-{
-  static double ftail, gtail, ggtail, ftail_cut, gtail_cut, ggtail_cut;
-
-  elstat_value(r, dp_kappa, &ftail, &gtail, &ggtail);
-  elstat_value(dp_cut, dp_kappa, &ftail_cut, &gtail_cut, &ggtail_cut);
-
-  *fnval_tail = ftail - ftail_cut;
-  *grad_tail = gtail - gtail_cut;
-  *ggrad_tail = 0.0;
-}
-
 /***************************************************************
  * 
  * damped shifted force Coulomb potential 
@@ -1299,8 +1280,6 @@ void elstat_dsf(double r, double dp_kappa, double *fnval_tail, double *grad_tail
   *ggrad_tail = ggtail - ggtail_cut;
 #endif /* DIPOLE */
 }
-
-
 
 /****************************************************************
  *
