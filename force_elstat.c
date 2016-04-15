@@ -348,7 +348,7 @@ double calc_forces(double *xi_opt, double *forces, int flag)
 	    /* updating tail-functions - only necessary with variing kappa */
 	    if (!apt->sw_kappa)
 #ifdef NEWCOUL   /* NEWCOUL */
-	      elstat_lammps_wolf(neigh->r, dp_kappa, &neigh->fnval_el, &neigh->grad_el, &neigh->ggrad_el);
+	      elstat_dsf(neigh->r, dp_kappa, &neigh->fnval_el, &neigh->grad_el, &neigh->ggrad_el);
 #else
 	      elstat_shift(neigh->r, dp_kappa, &neigh->fnval_el, &neigh->grad_el, &neigh->ggrad_el);
 #endif	      
@@ -729,8 +729,10 @@ double calc_forces(double *xi_opt, double *forces, int flag)
 	/* S I X T H  loop: self energy contributions and sum-up force contributions */
 	double qq;
 #ifdef NEWCOUL
-	double e_shift;
-        e_shift=erfc(dp_kappa*dp_cut)/dp_cut;
+	double e_shift, ggrad;
+        elstat_value(dp_cut, dp_kappa, &fnval_tail, &grad_tail, &ggrad);
+        //e_shift = fnval_tail;    // wolf
+	e_shift = fnval_tail + grad_tail*dp_cut;
 #endif
 #ifdef DIPOLE
 	double pp;
@@ -744,7 +746,7 @@ double calc_forces(double *xi_opt, double *forces, int flag)
 	  if (charge[type1]) {
 	    qq = charge[type1] * charge[type1];
 #ifdef NEWCOUL
-     	    fnval = dp_eps * qq * (dp_kappa / sqrt(M_PI) + 0.5*e_shift );
+     	    fnval = qq * ( dp_eps * dp_kappa / sqrt(M_PI) + 0.5*e_shift );
 #else
 	    fnval = dp_eps * dp_kappa * qq / sqrt(M_PI);
 #endif
