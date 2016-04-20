@@ -113,7 +113,9 @@ SHELL = /bin/bash
 # i686-gcc      32bit GNU Compiler
 
 #SYSTEM = i686-gcc
-SYSTEM = x86_64-clang
+SYSTEM = x86_64-gcc
+
+BIN_DIR = bin/
 
 # Base directory of your installation of the MKL or ACML
 
